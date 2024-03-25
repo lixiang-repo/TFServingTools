@@ -20,52 +20,6 @@ public class Application {
 
     static List<String> schema;
 
-    public static void initSchema(String schemaConf) throws IOException {
-        schema = new ArrayList<>();
-
-        InputStream fileInputStream = Application.class.getClassLoader().getResourceAsStream(schemaConf);
-        BufferedReader br = new BufferedReader(new InputStreamReader(fileInputStream));
-        String line;
-        while ((line = br.readLine()) != null) {
-            if (line.startsWith("#") || line.startsWith("label")) {
-                continue;
-            }
-            String name = line.split(" +")[0];
-            schema.add(name);
-        }
-        System.out.println("schema: " + schema);
-    }
-
-    public static TensorProto buildStringTensorProto(List<String> input) {
-        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
-        inputTensorProto.setDtype(DataType.DT_STRING);
-        List<ByteString> list = input.stream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
-        inputTensorProto.addAllStringVal(list);
-        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
-        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(input.size()));
-        inputTensorProto.setTensorShape(inputShapeBuilder.build());
-
-        return inputTensorProto.build();
-    }
-
-    public static TensorProto buildFloatTensorProto(List<Float> input) {
-        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
-        inputTensorProto.setDtype(DataType.DT_FLOAT);
-        inputTensorProto.addAllFloatVal(input);
-        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
-        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(input.size()));
-        inputTensorProto.setTensorShape(inputShapeBuilder.build());
-
-        return inputTensorProto.build();
-    }
-
-
-    public static PredictionServiceGrpc.PredictionServiceBlockingStub getPredictionServiceBlockingStub(String ip, int port) {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress(ip, port).usePlaintext(true).build();
-        PredictionServiceGrpc.PredictionServiceBlockingStub stub = PredictionServiceGrpc.newBlockingStub(channel);
-        return stub;
-    }
-
     public static void main(String[] args) throws IOException {
         initSchema("schema.conf");
 
@@ -97,6 +51,105 @@ public class Application {
         }
 
     }
+    public static void initSchema(String schemaConf) throws IOException {
+        schema = new ArrayList<>();
+
+        InputStream fileInputStream = Application.class.getClassLoader().getResourceAsStream(schemaConf);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fileInputStream));
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (line.startsWith("#") || line.startsWith("label")) {
+                continue;
+            }
+            String name = line.split(" +")[0];
+            schema.add(name);
+        }
+        System.out.println("schema: " + schema);
+    }
+
+    public static TensorProto buildIn64TensorProto(List<Long> input) {
+        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
+        inputTensorProto.setDtype(DataType.DT_INT64);
+        inputTensorProto.addAllInt64Val(input);
+        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(input.size()));
+        inputTensorProto.setTensorShape(inputShapeBuilder.build());
+
+        return inputTensorProto.build();
+    }
+
+    public static TensorProto buildIn64ListTensorProto(List<List<Long>> inputs) {
+        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
+        inputTensorProto.setDtype(DataType.DT_INT64);
+        for (List<Long> input : inputs) {
+            inputTensorProto.addAllInt64Val(input);
+        }
+        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(inputs.size()));
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(inputs.get(0).size()));
+        inputTensorProto.setTensorShape(inputShapeBuilder.build());
+
+        return inputTensorProto.build();
+    }
+
+    public static TensorProto buildStringTensorProto(List<String> input) {
+        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
+        inputTensorProto.setDtype(DataType.DT_STRING);
+        List<ByteString> list = input.stream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
+        inputTensorProto.addAllStringVal(list);
+        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(input.size()));
+        inputTensorProto.setTensorShape(inputShapeBuilder.build());
+
+        return inputTensorProto.build();
+    }
+
+    public static TensorProto buildStringListTensorProto(List<List<String>> inputs) {
+        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
+        inputTensorProto.setDtype(DataType.DT_STRING);
+        for (List<String> input : inputs) {
+            List<ByteString> list = input.stream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
+            inputTensorProto.addAllStringVal(list);
+        }
+        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(inputs.size()));
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(inputs.get(0).size()));
+        inputTensorProto.setTensorShape(inputShapeBuilder.build());
+
+        return inputTensorProto.build();
+    }
+
+    public static TensorProto buildFloatTensorProto(List<Float> input) {
+        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
+        inputTensorProto.setDtype(DataType.DT_FLOAT);
+        inputTensorProto.addAllFloatVal(input);
+        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(input.size()));
+        inputTensorProto.setTensorShape(inputShapeBuilder.build());
+
+        return inputTensorProto.build();
+    }
+
+    public static TensorProto buildFloatListTensorProto(List<List<Float>> inputs) {
+        TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
+        inputTensorProto.setDtype(DataType.DT_FLOAT);
+        for (List<Float> list : inputs) {
+            inputTensorProto.addAllFloatVal(list);
+        }
+        TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(inputs.size()));
+        inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(inputs.get(0).size()));
+        inputTensorProto.setTensorShape(inputShapeBuilder.build());
+
+        return inputTensorProto.build();
+    }
+
+    public static PredictionServiceGrpc.PredictionServiceBlockingStub getPredictionServiceBlockingStub(String ip, int port) {
+        ManagedChannel channel = ManagedChannelBuilder.forAddress(ip, port).usePlaintext(true).build();
+        PredictionServiceGrpc.PredictionServiceBlockingStub stub = PredictionServiceGrpc.newBlockingStub(channel);
+        return stub;
+    }
+
 
 
 }
