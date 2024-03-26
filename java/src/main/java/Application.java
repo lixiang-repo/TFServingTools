@@ -24,9 +24,9 @@ public class Application {
 
     public static void main(String[] args) throws IOException {
         initSchema("schema.conf");
-
         stub = getPredictionServiceBlockingStub("60.205.130.26", 8500);
 
+        //PredictRequest
         Predict.PredictRequest.Builder predictRequestBuilder = Predict.PredictRequest.newBuilder();
         Model.ModelSpec.Builder modelSpecBuilder = Model.ModelSpec.newBuilder();
         modelSpecBuilder.setName("model");
