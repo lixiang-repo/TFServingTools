@@ -20,10 +20,12 @@ public class Application {
 
     static List<String> schema;
 
+    static PredictionServiceGrpc.PredictionServiceBlockingStub stub;
+
     public static void main(String[] args) throws IOException {
         initSchema("schema.conf");
 
-        PredictionServiceGrpc.PredictionServiceBlockingStub stub = getPredictionServiceBlockingStub("60.205.130.26", 8500);
+        stub = getPredictionServiceBlockingStub("60.205.130.26", 8500);
 
         Predict.PredictRequest.Builder predictRequestBuilder = Predict.PredictRequest.newBuilder();
         Model.ModelSpec.Builder modelSpecBuilder = Model.ModelSpec.newBuilder();
