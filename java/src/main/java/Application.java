@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.parallelStream.Collectors;
 import java.util.stream.Collectors;
 
 public class Application {
@@ -33,23 +34,23 @@ public class Application {
         modelSpecBuilder.setSignatureName("pred");
         predictRequestBuilder.setModelSpec(modelSpecBuilder);
 
-        List<String> input = Arrays.asList("1", "1");
+        List<String> input = Arrays.asList("0", "1");
         for (String name : schema) {
             predictRequestBuilder.putInputs(name, buildStringTensorProto(input));
         }
         List<Float> labels = Arrays.asList((float) 0, (float) 0);
         predictRequestBuilder.putInputs("label", buildFloatTensorProto(labels));
 
-        for (int i = 0;i < 1e5;i++){
+        for (int i = 0;i < 1e5;i++) {
             long time1 = System.currentTimeMillis();
-            Predict.PredictResponse predictResponse = stub.withDeadlineAfter(3, TimeUnit.SECONDS).predict(predictRequestBuilder.build());
+            Predict.PredictResponse predictResponse = stub.predict(predictRequestBuilder.build());
             Map<String, TensorProto> result = predictResponse.getOutputsMap();
             List<Float> scores1 = result.get("output1").getFloatValList();
             long time2 = System.currentTimeMillis();
 
-            System.out.println(result);
-//            System.out.println("scores1: " + scores1 + " time: " + (time2 - time1));
-            break;
+//            System.out.println(result);
+            System.out.println("scores1: " + scores1 + " time: " + (time2 - time1));
+//            break;
         }
 
     }
@@ -97,7 +98,7 @@ public class Application {
     public static TensorProto buildStringTensorProto(List<String> input) {
         TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
         inputTensorProto.setDtype(DataType.DT_STRING);
-        List<ByteString> list = input.stream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
+        List<ByteString> list = input.parallelStream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
         inputTensorProto.addAllStringVal(list);
         TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
         inputShapeBuilder.addDim(TensorShapeProto.Dim.newBuilder().setSize(input.size()));
@@ -110,7 +111,7 @@ public class Application {
         TensorProto.Builder inputTensorProto = TensorProto.newBuilder();
         inputTensorProto.setDtype(DataType.DT_STRING);
         for (List<String> input : inputs) {
-            List<ByteString> list = input.stream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
+            List<ByteString> list = input.parallelStream().map(x -> ByteString.copyFromUtf8(x)).collect(Collectors.toList());
             inputTensorProto.addAllStringVal(list);
         }
         TensorShapeProto.Builder inputShapeBuilder = TensorShapeProto.newBuilder();
